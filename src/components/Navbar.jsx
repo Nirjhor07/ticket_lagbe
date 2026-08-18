@@ -194,7 +194,7 @@ export default function Navbar() {
                   href="/auth/signin"
                   className="px-4 py-2 text-sm font-bold text-[#1565C0]/80 hover:text-[#1565C0] transition-colors"
                 >
-                  Sign In
+                  Login
                 </Link>
 
                 <Link
@@ -301,12 +301,12 @@ export default function Navbar() {
             ) : (
               <div className="flex flex-col gap-3">
                 <Link
-                  href="/auth/signin"
+                  href="/auth/login"
                   className="flex items-center justify-center gap-2 rounded-xl border border-[#90CAF9] bg-[#E3F2FD] py-3 text-base font-bold text-[#1565C0] transition hover:bg-[#90CAF9]/30"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <GravityIcon data={Person} size={18} />
-                  <span>Sign In</span>
+                  <span>Login</span>
                 </Link>
 
                 <Link

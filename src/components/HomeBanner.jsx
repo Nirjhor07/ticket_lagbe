@@ -26,7 +26,7 @@ const carouselImages = [
 export default function HeroBanner() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(1);
-  
+
   const handleNext = () => {
     setDirection(1);
     setCurrentIndex((prev) => (prev + 1) % carouselImages.length);
@@ -95,7 +95,7 @@ export default function HeroBanner() {
   };
 
   return (
-    <section className="relative w-full min-h-[90vh] bg-[#E3F2FD] flex items-center justify-center overflow-hidden font-sans pt-20 pb-12">
+    <section className="relative w-full min-h-[50vh] bg-[#E3F2FD] flex items-center justify-center overflow-hidden font-sans py-12 ">
       {/* --- Ambient Background Glows --- */}
       <div className="absolute top-0 left-[-10%] w-[50%] h-[50%] bg-[#90CAF9]/40 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-5%] w-[40%] h-[60%] bg-[#2196F3]/20 blur-[120px] rounded-full pointer-events-none" />
