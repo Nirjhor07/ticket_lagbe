@@ -2,8 +2,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { toast } from "react-toastify";
-import { authClient } from "@/lib/auth-client";
+
 import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
 
 export default function LogIn() {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,7 +19,7 @@ export default function LogIn() {
 
     const formData = new FormData(e.target);
     const payload = Object.fromEntries(formData.entries());
-    console.log("Sign In Payload:", payload);
+    // console.log("Sign In Payload:", payload);
 
     const { data, error } = await authClient.signIn.email({
       email: payload.email,

@@ -1,31 +1,39 @@
 import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
+import { nextCookies } from "better-auth/next-js";
 
-const client = new MongoClient(process.env.MONGO_BD_URI); // Replace with your MongoDB connection string);
-const db = client.db(process.env.MONGODB_NAME); // Replace with your database name
+const client = new MongoClient(process.env.MONGO_BD_URI);
+const db = client.db(process.env.MONGODB_NAME || "ticket_lagbe");
 
 export const auth = betterAuth({
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
+  secret: process.env.BETTER_AUTH_SECRET,
   database: mongodbAdapter(db, {
-    // Optional: if you don't provide a client, database transactions won't be enabled.
     client,
   }),
-  //...other options
   emailAndPassword: {
     enabled: true,
+  },
+  session: {
+    cookieCache: {
+      enabled: false,
+    },
   },
   user: {
     additionalFields: {
       role: {
-        default: "user",
+        type: "string",
+        defaultValue: "user",
       },
     },
   },
-
   socialProviders: {
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
   },
+  plugins: [nextCookies()],
 });
+

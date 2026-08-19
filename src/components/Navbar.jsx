@@ -12,7 +12,7 @@ import {
   PersonPlus,
   ArrowRightFromSquare,
 } from "@gravity-ui/icons";
-// import { authClient } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 // Helper component to render Gravity UI icons directly from raw SVG data
 function GravityIcon({ data, size = 16, className = "" }) {
@@ -34,9 +34,9 @@ export default function Navbar() {
 
   const pathname = usePathname();
 
-  // const { data: session } = authClient.useSession();
-  // const user = session?.user || null;
-  const user = null; // Placeholder for user state, replace with actual user data from your auth system
+  const { data: session, isPending, error } = authClient.useSession();
+  const user = session?.user || null;
+  console.log(user);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -51,9 +51,9 @@ export default function Navbar() {
   }, []);
 
   const handleSignOut = async () => {
-    // await authClient.signOut();
-    // setIsMenuOpen(false);
-    // setIsProfileDropdownOpen(false);
+    await authClient.signOut();
+    setIsMenuOpen(false);
+    setIsProfileDropdownOpen(false);
   };
 
   const navLinks = [
@@ -62,6 +62,10 @@ export default function Navbar() {
     { label: "About", href: "/about" },
     { label: "Contact", href: "/contact" },
   ];
+
+  if (user?.id) {
+    navLinks.push({ label: "Dashboard", href: "/dashboard" });
+  }
 
   return (
     <nav className="sticky top-0 z-50 border-b border-[#90CAF9]/60 bg-[#E3F2FD]/90 backdrop-blur-xl shadow-lg shadow-[#1565C0]/5 transition-all duration-300">
