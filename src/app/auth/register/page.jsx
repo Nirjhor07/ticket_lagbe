@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { authClient } from "@/lib/auth-client";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
@@ -46,7 +46,7 @@ export default function SignUp() {
     try {
       const { data, error } = await authClient.signUp.email({
         ...payload,
-        // role: role || "user", // Appending the selected role state
+        role: role || "user", // Appending the selected role state
       });
 
       if (error) {
