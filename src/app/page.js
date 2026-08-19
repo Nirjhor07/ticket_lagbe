@@ -5,6 +5,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import PageDivider from "@/components/PageDevider";
 import Stats from "@/components/Stats";
 
+
 export default function Home() {
   return (
     <div>
@@ -17,6 +18,7 @@ export default function Home() {
       <About />
       <PageDivider />
       <Contact />
+   
     </div>
   );
 }

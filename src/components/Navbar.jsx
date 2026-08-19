@@ -191,14 +191,14 @@ export default function Navbar() {
             ) : (
               <div className="flex items-center gap-3">
                 <Link
-                  href="/auth/signin"
+                  href="/auth/login"
                   className="px-4 py-2 text-sm font-bold text-[#1565C0]/80 hover:text-[#1565C0] transition-colors"
                 >
                   Login
                 </Link>
 
                 <Link
-                  href="/auth/signup"
+                  href="/auth/register"
                   className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1565C0] to-[#2196F3] px-5 py-2 text-sm font-bold text-white shadow-md shadow-[#1565C0]/20 hover:shadow-[#1565C0]/30 transition-all duration-300 hover:-translate-y-0.5"
                 >
                   <span>Register</span>
@@ -310,7 +310,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/auth/signup"
+                  href="/auth/register"
                   className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1565C0] to-[#2196F3] py-3 text-base font-bold text-white shadow-md shadow-[#1565C0]/20 transition"
                   onClick={() => setIsMenuOpen(false)}
                 >
