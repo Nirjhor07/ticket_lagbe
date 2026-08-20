@@ -36,7 +36,7 @@ export default function Navbar() {
 
   const { data: session, isPending, error } = authClient.useSession();
   const user = session?.user || null;
-  console.log(user);
+  // console.log(user);
 
   useEffect(() => {
     function handleClickOutside(event) {
