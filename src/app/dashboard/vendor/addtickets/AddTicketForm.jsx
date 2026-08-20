@@ -183,10 +183,11 @@ export default function AddTicketForm({ user: vendor }) {
         transportType: transportType, // Full string e.g. "Flight", "Bus", "Train", "Ferry"
         price: parseFloat(data.price),
         quantity: parseInt(data.quantity, 10),
+        totalCost: parseFloat(data.price) * parseInt(data.quantity, 10),
         departureDateTime: new Date(data.departureDateTime).toISOString(),
         perks: selectedPerks,
         imageUrl: finalImageUrl,
-        vendorId: vendor._id,
+        vendorId: vendor.id,
         vendorName: vendor.name,
         vendorEmail: vendor.email,
         status: "pending",
@@ -243,7 +244,9 @@ export default function AddTicketForm({ user: vendor }) {
               <span className="text-slate-400 block text-[10px] leading-3 uppercase font-bold">
                 Status
               </span>
-              <span className="font-bold text-amber-500">Pending</span>
+              <span className="font-bold text-amber-500">
+                posted ticket status will be pending until admin approval
+              </span>
             </div>
           </div>
         </div>
