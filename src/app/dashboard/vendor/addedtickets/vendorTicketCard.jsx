@@ -1,4 +1,5 @@
 "use client";
+import { updateVendorTicket } from "@/lib/actions/updateVendorTicket";
 import { deleteVendorTicket } from "@/lib/api/deleteVendorTicket";
 import {
   Calendar,
@@ -46,20 +47,28 @@ export default function VendorTicketCard({ ticket }) {
   const handleSaveUpdate = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
       const updatedPayload = {
         ...formData,
+        price: Number(formData.price),
+        quantity: Number(formData.quantity),
         totalCost: Number(formData.price) * Number(formData.quantity),
       };
 
-      //   if (onUpdate) {
-      //     await onUpdate(ticket._id, updatedPayload);
-      //   } else {
-      //     console.log("Saving ticket updates:", ticket._id, updatedPayload);
-      //   }
-      setIsUpdateOpen(false);
+      // update the ticket function
+      const res = await updateVendorTicket(ticket._id, updatedPayload);
+
+      if (res?.modifiedCount > 0 || res?.matchedCount > 0) {
+        toast.success("Ticket updated successfully!");
+        setIsUpdateOpen(false);
+        router.refresh();
+      } else {
+        toast.error(res?.message || "Failed to update ticket");
+      }
     } catch (error) {
-      console.error("Failed to update ticket:", error);
+      console.error("Update error:", error);
+      toast.error(error.message || "Something went wrong while updating");
     } finally {
       setIsSubmitting(false);
     }
