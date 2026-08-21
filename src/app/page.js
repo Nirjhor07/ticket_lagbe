@@ -5,6 +5,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import PageDivider from "@/components/PageDevider";
 import Stats from "@/components/Stats";
 import AdvertiseCard from "@/components/AdvertiseCard";
+import LatestTickets from "@/components/LatestTickets";
 
 export default function Home() {
   return (
@@ -18,6 +19,8 @@ export default function Home() {
       <WhyChooseUs />
       <PageDivider />
       <About />
+      <PageDivider />
+      <LatestTickets />
       <PageDivider />
       <Contact />
     </div>
