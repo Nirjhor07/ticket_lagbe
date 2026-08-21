@@ -89,6 +89,7 @@ export function DashboardSidebar({ userRole = "user" }) {
     user: navUserLinks,
     vendor: navVendorsLinks,
     admin: navAdminLinks,
+    fraud: navVendorsLinks,
   };
 
   const navItems = navUser[userRole] || navUserLinks;
