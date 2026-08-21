@@ -13,6 +13,9 @@ const statusColorMap = {
 
 const columns = [
   { id: "title", name: "Ticket Title" },
+  { id: "price", name: "Price" },
+  { id: "quantity", name: "Booking Quantity" },
+  { id: "departureDateTime", name: "Departure Date" },
   { id: "vendorEmail", name: "Vendor Email" },
   { id: "status", name: "Status" },
   { id: "actions", name: "Actions" },
@@ -81,6 +84,28 @@ export default function AdminTicketTable({ initialTickets = [] }) {
                             {ticket.transportType})
                           </span>
                         </div>
+                      </Table.Cell>
+
+                      {/* Price */}
+                      <Table.Cell>
+                        <span className="text-sm text-foreground/90">
+                          ৳ {ticket.price?.toFixed(2)}
+                        </span>
+                      </Table.Cell>
+
+                      {/* Booking Quantity */}
+                      <Table.Cell>
+                        <span className="text-sm text-foreground/90">
+                          {ticket.quantity}
+                        </span>
+                      </Table.Cell>
+                      {/* Departure Date */}
+                      <Table.Cell>
+                        <span className="text-sm text-foreground/90">
+                          {new Date(
+                            ticket.departureDateTime,
+                          ).toLocaleDateString()}
+                        </span>
                       </Table.Cell>
 
                       {/* Vendor Email */}

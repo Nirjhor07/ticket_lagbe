@@ -16,6 +16,8 @@ const statusColorMap = {
 const columns = [
   { id: "title", name: "Ticket Title" },
   { id: "Booked by", name: "Booked by" },
+  { id: "Total Price", name: "Total Price" },
+  { id: "quantity", name: "Booking Quantity" },
   { id: "status", name: "Status" },
   { id: "actions", name: "Actions" },
 ];
@@ -95,6 +97,20 @@ export default function VendorTicketTable({ initialTickets = [] }) {
                       <Table.Cell>
                         <span className="text-sm text-foreground/90">
                           {ticket.bookedBy}
+                        </span>
+                      </Table.Cell>
+
+                      {/* Total Price */}
+                      <Table.Cell>
+                        <span className="text-sm text-foreground/90">
+                          ৳ {(ticket.price * ticket.quantity).toFixed(2)}
+                        </span>
+                      </Table.Cell>
+
+                      {/* booking quantity */}
+                      <Table.Cell>
+                        <span className="text-sm text-foreground/90">
+                          {ticket.quantity}
                         </span>
                       </Table.Cell>
 
