@@ -4,7 +4,7 @@ import Contact from "./contact/page";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import PageDivider from "@/components/PageDevider";
 import Stats from "@/components/Stats";
-
+import AdvertiseCard from "@/components/AdvertiseCard";
 
 export default function Home() {
   return (
@@ -13,12 +13,13 @@ export default function Home() {
       <PageDivider />
       <Stats />
       <PageDivider />
+      <AdvertiseCard />
+      <PageDivider />
       <WhyChooseUs />
       <PageDivider />
       <About />
       <PageDivider />
       <Contact />
-   
     </div>
   );
 }
