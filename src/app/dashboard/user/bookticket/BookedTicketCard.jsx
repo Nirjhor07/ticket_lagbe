@@ -114,7 +114,10 @@ export const BookedTicketCard = ({ ticket }) => {
           </div>
           <div className="text-right">
             <p className="text-xs text-slate-500">Total Price</p>
-            <p className="text-lg font-bold text-slate-900">${totalPrice}</p>
+            <p className="text-lg font-bold text-slate-900">
+              <span className="font-extrabold text-xl mr-1">৳</span>
+              {totalPrice}
+            </p>
           </div>
         </div>
 

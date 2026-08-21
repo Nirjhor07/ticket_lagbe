@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
+import { admin } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGO_BD_URI);
 const db = client.db(process.env.MONGODB_NAME || "ticket_lagbe");
@@ -34,6 +35,6 @@ export const auth = betterAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     },
   },
-  plugins: [nextCookies()],
-});
 
+  plugins: [admin(), nextCookies()],
+});
