@@ -30,6 +30,7 @@ export const BookedTicketCard = ({ ticket }) => {
 
   const handlePayNow = () => {
     // Handle payment logic / redirection here
+
     console.log(`Initiating payment for booking: ${ticket._id}`);
   };
 
@@ -123,7 +124,7 @@ export const BookedTicketCard = ({ ticket }) => {
 
         {/* Pay Now Button */}
         <div className="mt-4 pt-2">
-          <button
+          {/* <button
             onClick={handlePayNow}
             disabled={!isAccepted}
             className={`w-full rounded-lg py-2 text-center text-sm font-semibold transition ${
@@ -133,7 +134,26 @@ export const BookedTicketCard = ({ ticket }) => {
             }`}
           >
             {ticket.status === "paid" ? "Paid" : "Pay Now"}
-          </button>
+          </button> */}
+          <form
+            action="/api/checkout_sessions"
+            method="POST"
+            className="w-full"
+          >
+            {/* ব্যাকএন্ডে পাঠানোর জন্য হিডেন ইনপুট ফিল্ড */}
+            <input type="hidden" name="ticketId" value={ticket._id} />
+            <button
+              type="submit"
+              disabled={!isAccepted || ticket.status === "paid"}
+              className={`w-full rounded-lg py-2 text-center text-sm font-semibold transition ${
+                isAccepted && ticket.status !== "paid"
+                  ? "bg-slate-900 text-white hover:bg-slate-800 cursor-pointer shadow-sm active:scale-[0.98]"
+                  : "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
+              }`}
+            >
+              {ticket.status === "paid" ? "Paid" : "Pay Now"}
+            </button>
+          </form>
         </div>
       </div>
     </div>
