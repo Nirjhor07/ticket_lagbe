@@ -1,11 +1,10 @@
 import React from "react";
 import { getAllTicketStatusApproved } from "@/lib/api/getAlltickets";
-import { Compass, CardClub } from "@gravity-ui/icons";
-import TicketCard from "./TicketCard";
+import { Compass } from "@gravity-ui/icons";
+import TicketsContainer from "./TicketsContainer";
 
 const AllTicketsPage = async () => {
-  const tickets = await getAllTicketStatusApproved();
-  // console.log("all tickets page", tickets?.[0]?._id);
+  const tickets = (await getAllTicketStatusApproved()) || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50/70 via-sky-50/30 to-white px-4 py-12 sm:px-6 lg:px-8">
@@ -25,25 +24,8 @@ const AllTicketsPage = async () => {
           </p>
         </div>
 
-        {/* Tickets Grid */}
-        {tickets && tickets.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {tickets.map((ticket) => (
-              <TicketCard key={ticket._id} ticket={ticket} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-blue-200 bg-white/50 p-12 text-center backdrop-blur-sm">
-            <CardClub className="h-12 w-12 text-blue-300" />
-            <h3 className="mt-4 text-lg font-semibold text-slate-700">
-              No Tickets Available
-            </h3>
-            <p className="mt-1 text-sm text-slate-500">
-              There are no approved tickets matching the criteria right now.
-              Check back soon!
-            </p>
-          </div>
-        )}
+        {/* Dynamic Search & Grid Container */}
+        <TicketsContainer initialTickets={tickets} />
       </div>
     </div>
   );
