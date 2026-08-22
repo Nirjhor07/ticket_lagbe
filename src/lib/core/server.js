@@ -15,6 +15,10 @@ export const getHeaders = async () => {
 //protected server fetch function
 export const serverProtectedFetch = async (path) => {
   const headers = await getHeaders();
+  if (!headers.Authorization) {
+    redirect("/unauthorized");
+  }
+
   const res = await fetch(`${baseUrl}${path}`, {
     method: "GET",
     headers: {
@@ -44,6 +48,25 @@ export const serverMutation = async (path, body, Method = "POST") => {
     },
     body: JSON.stringify(body),
   });
+  return res.json();
+};
+
+// server protected mutation function
+export const serverProtectedMutation = async (path, body, Method = "POST") => {
+  const headers = await getHeaders();
+  if (!headers.Authorization) {
+    redirect("/unauthorized");
+  }
+
+  const res = await fetch(`${baseUrl}${path}`, {
+    method: Method,
+    headers: {
+      "Content-Type": "application/json",
+      ...headers,
+    },
+    body: JSON.stringify(body),
+  });
+  await validateServerResponse(res);
   return res.json();
 };
 

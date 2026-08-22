@@ -194,7 +194,7 @@ export default function AddTicketForm({ user: vendor }) {
         advertisementStatus: "inactive",
       };
 
-      console.log("Prepared Ticket Payload:", payload);
+      // console.log("Prepared Ticket Payload:", payload);
 
       // Call the server action to create the ticket
       const res = await createTicket(payload);
@@ -213,6 +213,18 @@ export default function AddTicketForm({ user: vendor }) {
         toast.error(res?.message || "Failed to add ticket. Please try again.");
       }
     } catch (err) {
+      const redirectDigest = String(err?.digest || err?.message || "");
+      if (redirectDigest.includes("NEXT_REDIRECT")) {
+        if (redirectDigest.includes("/forbidden")) {
+          router.push("/forbidden");
+          return;
+        }
+        if (redirectDigest.includes("/unauthorized")) {
+          router.push("/unauthorized");
+          return;
+        }
+      }
+
       console.error(err);
       toast.error(err.message || "An unexpected error occurred.");
     } finally {

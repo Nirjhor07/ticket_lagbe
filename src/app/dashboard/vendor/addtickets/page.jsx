@@ -3,10 +3,15 @@ import AddTicketForm from "./AddTicketForm";
 import Loading from "@/app/loading";
 import { getUserSession } from "@/lib/core/getUserSession";
 import { ToastContainer } from "react-toastify";
+import { redirect } from "next/navigation";
 
 const addTicketPage = async () => {
   const user = await getUserSession();
-  console.log("User session in addTicketPage:", user);
+
+  if (!user) {
+    redirect("/unauthorized");
+  }
+
   if (user?.role === "fraud") {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
