@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Ticket Lagbe
 
-## Getting Started
+Ticket Lagbe is a role-based online ticket booking and management platform built with Next.js. It supports travel/event ticket discovery, booking, payment flow integration, and dashboard operations for users, vendors, and admins.
 
-First, run the development server:
+## Purpose
+
+The goal of this project is to provide a complete ticketing workflow where:
+
+- Users can browse verified tickets, book seats, and track bookings.
+- Vendors can add and manage tickets, monitor booking requests, and view revenues.
+- Admins can control users/vendors/tickets and manage platform-level actions.
+
+## Live URL
+
+- Live Site:
+
+## Key Features
+
+- Role-based authentication and authorization (user, vendor, admin).
+- Protected dashboard areas for each role.
+- Ticket creation and management for vendors.
+- Ticket browsing and details pages for users.
+- Booking flow with checkout session integration.
+- Vendor booking-request and transition management.
+- Admin controls for users, tickets, and advertisements.
+- Revenue analytics dashboard components.
+- Toast notifications for actions and feedback.
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19
+- Tailwind CSS 4
+- MongoDB
+- Better Auth
+- Stripe
+- JWT (JSON Web Token)
+- Express.js (Backend API)
+
+## NPM Packages Used
+
+### Dependencies
+
+- @better-auth/mongo-adapter
+- @heroui/react
+- @heroui/styles
+- @stripe/stripe-js
+- better-auth
+- mongodb
+- motion
+- next
+- react
+- react-dom
+- react-toastify
+- recharts
+- stripe
+
+### Backend Dependencies (API Server)
+
+- express
+- cors
+- jose-cjs
+
+### Dev Dependencies
+
+- @gravity-ui/icons
+- @tailwindcss/postcss
+- babel-plugin-react-compiler
+- eslint
+- eslint-config-next
+- tailwindcss
+
+## Scripts
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run build
+npm run start
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run Locally
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+1. Clone the repository.
+2. Install dependencies:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+```
 
-## Learn More
+3. Create a `.env` file with your required environment variables.
 
-To learn more about Next.js, take a look at the following resources:
+### JWT Environment Variables (.env)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Use JWT secrets/keys from `.env` in your backend for token sign and verify.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+JWT_ACCESS_SECRET=your_access_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+```
 
-## Deploy on Vercel
+If you are using key pair based JWT (with jose-cjs), keep JWT keys in `.env` as well.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+4. Start development server:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run dev
+```
+
+5. Open http://localhost:3000
