@@ -5,6 +5,7 @@ import React from "react";
 const UserTransitionPage = async () => {
   const user = await getUserSession();
   const transitions = await getAllTransitions(user?.id || null);
+  console.log("User Transitions:", transitions);
 
   return (
     <main className="w-full min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8">
@@ -28,7 +29,7 @@ const UserTransitionPage = async () => {
           {transitions && transitions.length > 0 ? (
             transitions.map((item) => (
               <article
-                key={item.transactionId}
+                key={item._id}
                 className="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3"
               >
                 <div className="flex items-center justify-between pb-2 border-b border-gray-100">
@@ -123,7 +124,7 @@ const UserTransitionPage = async () => {
                 {transitions && transitions.length > 0 ? (
                   transitions.map((item) => (
                     <tr
-                      key={item.transactionId}
+                      key={item._id}
                       className="hover:bg-gray-50/75 transition-colors"
                     >
                       <td className="px-6 py-4 font-mono text-xs font-medium text-gray-900 whitespace-nowrap">

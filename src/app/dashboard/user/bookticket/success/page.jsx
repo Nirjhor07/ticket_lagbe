@@ -47,7 +47,7 @@ export default async function SuccessPage({ searchParams }) {
     if (!res.ok) {
       console.log("Failed to store payment data:");
     }
-    const data = await updateUserBookingRequest(ticketId, paymentStatus);
+    // await updateUserBookingRequest(ticketId, paymentStatus); i will fix it later to update status when booked
   }
 
   return (
