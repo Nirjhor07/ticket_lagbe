@@ -35,6 +35,24 @@ export const auth = betterAuth({
         type: "string",
         defaultValue: "user",
       },
+      requestedRole: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (user) => {
+          return {
+            data: {
+              ...user,
+              role: user.requestedRole || "user",
+            },
+          };
+        },
+      },
     },
   },
   socialProviders: {

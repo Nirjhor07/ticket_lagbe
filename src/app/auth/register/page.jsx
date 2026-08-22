@@ -46,7 +46,8 @@ export default function SignUp() {
     try {
       const { data, error } = await authClient.signUp.email({
         ...payload,
-        role: role || "user", // Appending the selected role state
+        // role: role || "user", // Appending the selected role state
+        requestedRole: role || "user",
       });
 
       if (error) {
