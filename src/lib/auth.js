@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { MongoClient } from "mongodb";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import { nextCookies } from "better-auth/next-js";
-import { admin } from "better-auth/plugins";
+import { admin, jwt } from "better-auth/plugins";
 
 const client = new MongoClient(process.env.MONGO_BD_URI);
 const db = client.db(process.env.MONGODB_NAME || "ticket_lagbe");
@@ -16,9 +16,17 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  // session: {
+  //   cookieCache: {
+  //     enabled: false,
+  //   },
+  // },
   session: {
     cookieCache: {
-      enabled: false,
+      enabled: true,
+      strategy: "jwt",
+      //max age: 7 days
+      maxAge: 7 * 24 * 60 * 60,
     },
   },
   user: {
@@ -36,5 +44,5 @@ export const auth = betterAuth({
     },
   },
 
-  plugins: [admin(), nextCookies()],
+  plugins: [admin(), jwt(), nextCookies()],
 });
