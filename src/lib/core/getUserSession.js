@@ -10,3 +10,11 @@ export const getUserSession = async () => {
   });
   return res?.user || null;
 };
+
+// getting jwt Token from the server
+export const getJwtToken = async () => {
+  const token = await auth.api.getToken({
+    headers: await headers(),
+  });
+  return token?.token || null;
+};

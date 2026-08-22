@@ -6,8 +6,11 @@ import PageDivider from "@/components/PageDevider";
 import Stats from "@/components/Stats";
 import AdvertiseCard from "@/components/AdvertiseCard";
 import LatestTickets from "@/components/LatestTickets";
+import { getJwtToken } from "@/lib/core/getUserSession";
 
-export default function Home() {
+export default async function Home() {
+  // const jwtToken = await getJwtToken();
+  // console.log("JWT token fetched successfully:", jwtToken);
   return (
     <div>
       <HeroBanner />

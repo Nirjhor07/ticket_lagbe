@@ -12,6 +12,14 @@ const VendorAddedTicketPage = async () => {
       tickets = await getVendorsTickets(user.id);
     }
   } catch (error) {
+    // Let Next.js navigation control-flow errors pass through.
+    if (
+      error?.digest?.startsWith("NEXT_REDIRECT") ||
+      error?.digest?.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+    ) {
+      throw error;
+    }
+
     console.error("Failed to fetch tickets, falling back to mock:", error);
   }
 
