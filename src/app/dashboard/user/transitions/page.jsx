@@ -5,7 +5,7 @@ import React from "react";
 const UserTransitionPage = async () => {
   const user = await getUserSession();
   const transitions = await getAllTransitions(user?.id || null);
-  console.log("User Transitions:", transitions);
+  // console.log("User Transitions:", transitions);
 
   return (
     <main className="w-full min-h-screen bg-gray-50/50 p-4 sm:p-6 lg:p-8">

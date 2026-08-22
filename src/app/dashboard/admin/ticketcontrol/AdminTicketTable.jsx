@@ -48,9 +48,7 @@ export default function AdminTicketTable({ initialTickets = [] }) {
 
   return (
     <div className="w-full space-y-4">
-      {/* ========================================================= */}
-      {/* Mobile & Tablet Card View (Visible on screens < lg)       */}
-      {/* ========================================================= */}
+      {/* mobile view */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden">
         {tickets && tickets.length > 0 ? (
           tickets.map((ticket) => {
@@ -203,9 +201,7 @@ export default function AdminTicketTable({ initialTickets = [] }) {
         )}
       </div>
 
-      {/* ========================================================= */}
-      {/* Desktop Table View (Visible on screens >= lg)             */}
-      {/* ========================================================= */}
+      {/* visible on large screens */}
       <div className="hidden lg:block">
         <Table aria-label="Admin Ticket Management Table">
           <Table.ScrollContainer className="max-h-[600px] overflow-y-auto">

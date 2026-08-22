@@ -1,7 +1,9 @@
-import { serverFetch } from "../core/server";
+import { serverFetch, serverProtectedFetch } from "../core/server";
 
 export const getAllTransitions = async (userId) => {
-  const res = await serverFetch(`/api/user/transition?userId=${userId}`);
+  const res = await serverProtectedFetch(
+    `/api/user/transition?userId=${userId}`,
+  );
 
   return res;
 };

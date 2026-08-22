@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Table, Chip, Button } from "@heroui/react";
 import { Check, Xmark } from "@gravity-ui/icons";
-import { updateVendorTicketStatusByAdmin } from "@/lib/actions/updateVendorTicketStatusByAdmin";
 import { updateUserBookingRequest } from "@/lib/actions/updateUserBookingRequest";
 import { toast } from "react-toastify";
 
@@ -23,7 +22,7 @@ const columns = [
 ];
 
 export default function VendorTicketTable({ initialTickets = [] }) {
-  console.log("Initial Tickets:", initialTickets); // Log the initial tickets for debugging
+  // console.log("Initial Tickets:", initialTickets); // Log the initial tickets for debugging
   const [tickets, setTickets] = useState(initialTickets);
   const [loadingAction, setLoadingAction] = useState({
     id: null,
