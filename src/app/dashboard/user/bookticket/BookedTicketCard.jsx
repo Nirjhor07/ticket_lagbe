@@ -140,10 +140,16 @@ export const BookedTicketCard = ({ ticket }) => {
             method="POST"
             className="w-full"
           >
-            {/* ব্যাকএন্ডে পাঠানোর জন্য হিডেন ইনপুট ফিল্ড */}
-            <input type="hidden" name="ticketId" value={ticket._id} />
+            {/* backend input fields */}
+            <input type="hidden" name="ticketId" value={ticket.ticketId} />
+            <input type="hidden" name="price" value={ticket.price} />
+            <input type="hidden" name="quantity" value={ticket.quantity} />
+            <input type="hidden" name="status" value={ticket.status} />
+            <input type="hidden" name="userId" value={ticket.bookedBy} />
+
             <button
               type="submit"
+              role="link"
               disabled={!isAccepted || ticket.status === "paid"}
               className={`w-full rounded-lg py-2 text-center text-sm font-semibold transition ${
                 isAccepted && ticket.status !== "paid"
