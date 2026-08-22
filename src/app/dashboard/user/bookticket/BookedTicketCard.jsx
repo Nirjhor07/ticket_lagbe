@@ -146,6 +146,7 @@ export const BookedTicketCard = ({ ticket }) => {
             <input type="hidden" name="quantity" value={ticket.quantity} />
             <input type="hidden" name="status" value={ticket.status} />
             <input type="hidden" name="userId" value={ticket.bookedBy} />
+            <input type="hidden" name="vendorId" value={ticket.vendorId} />
 
             <button
               type="submit"

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { stripe } from "@/lib/stripe";
 import { storePaymentData } from "@/lib/actions/transitions";
+import { updateUserBookingRequest } from "@/lib/actions/updateUserBookingRequest";
 
 export default async function SuccessPage({ searchParams }) {
   const { session_id } = await searchParams;
@@ -29,6 +30,7 @@ export default async function SuccessPage({ searchParams }) {
   const amountTotal = (session.amount_total / 100).toFixed(2);
   const currency = session.currency?.toUpperCase() || "BDT";
   const { ticketId, quantity } = session.metadata || {};
+  const vendorId = session.metadata?.vendorId || null;
 
   if (paymentStatus === "paid" && ticketId) {
     const payload = {
@@ -39,11 +41,13 @@ export default async function SuccessPage({ searchParams }) {
       quantity,
       transactionId,
       userId,
+      vendorId,
     };
     const res = await storePaymentData(payload);
     if (!res.ok) {
       console.log("Failed to store payment data:");
     }
+    const data = await updateUserBookingRequest(ticketId, paymentStatus);
   }
 
   return (
