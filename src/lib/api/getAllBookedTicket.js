@@ -1,7 +1,7 @@
-import { serverFetch } from "../core/server";
+import { serverFetch, serverProtectedFetch } from "../core/server";
 
 export const allBookedTicketbyUserCreatedByVendor = async (vendorId) => {
-  const res = await serverFetch(
+  const res = await serverProtectedFetch(
     `/api/vendor/booked/tickets?vendorId=${vendorId}`,
   );
   return res;

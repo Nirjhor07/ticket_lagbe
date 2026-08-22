@@ -54,9 +54,6 @@ export default function VendorTicketTable({ initialTickets = [] }) {
 
   return (
     <div className="w-full space-y-4">
-      {/* ========================================================= */}
-      {/* Mobile & Tablet Card View (Visible on screens < lg)       */}
-      {/* ========================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:hidden">
         {tickets && tickets.length > 0 ? (
           tickets.map((ticket) => {

@@ -1,7 +1,7 @@
-import { serverMutation } from "../core/server";
+import { serverMutation, serverProtectedMutation } from "../core/server";
 
 export const updateUserBookingRequest = async (ticketId, newStatus) => {
-  const res = await serverMutation(
+  const res = await serverProtectedMutation(
     `/api/vendor/tickets/update/${ticketId}`,
     { status: newStatus },
     "PATCH",
