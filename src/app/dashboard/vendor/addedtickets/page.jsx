@@ -3,6 +3,8 @@ import { getVendorsTickets } from "@/lib/api/getVendorsTickets";
 import { getUserSession } from "@/lib/core/getUserSession";
 import VendorTicketCard from "./vendorTicketCard";
 
+export const dynamic = "force-dynamic";
+
 const VendorAddedTicketPage = async () => {
   let tickets = [];
 
@@ -15,7 +17,8 @@ const VendorAddedTicketPage = async () => {
     // Let Next.js navigation control-flow errors pass through.
     if (
       error?.digest?.startsWith("NEXT_REDIRECT") ||
-      error?.digest?.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+      error?.digest?.startsWith("NEXT_HTTP_ERROR_FALLBACK") ||
+      error?.digest === "DYNAMIC_SERVER_USAGE"
     ) {
       throw error;
     }

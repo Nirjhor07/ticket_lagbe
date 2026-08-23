@@ -36,6 +36,7 @@ export const serverFetch = async (path) => {
     headers: {
       "Content-Type": "application/json",
     },
+    cache: "no-store", // Disable caching for GET requests
   });
   return res.json();
 };
