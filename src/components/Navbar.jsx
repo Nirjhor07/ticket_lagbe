@@ -1,331 +1,502 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useSyncExternalStore,
+  startTransition,
+} from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-// Gravity UI Icons
-import {
-  ChevronDown,
-  ChevronUp,
-  Person,
-  PersonPlus,
-  ArrowRightFromSquare,
-} from "@gravity-ui/icons";
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import { authClient } from "@/lib/auth-client";
 
-// Helper component to render Gravity UI icons directly from raw SVG data
-function GravityIcon({ data, size = 16, className = "" }) {
-  if (!data || !data.svg) return null;
+const BASE_NAV_LINKS = [
+  { href: "/", label: "Home" },
+  { href: "/about", label: "About Us" },
+  { href: "/events", label: "Events" },
+  { href: "/facilities", label: "Facilities" },
+  { href: "/gallery", label: "Gallery" },
+  { href: "/contact", label: "Contact Us" },
+];
 
-  return (
-    <span
-      className={`inline-flex items-center justify-center shrink-0 [&>svg]:w-full [&>svg]:h-full ${className}`}
-      style={{ width: size, height: size }}
-      dangerouslySetInnerHTML={{ __html: data.svg }}
-    />
-  );
-}
+const emptySubscribe = () => () => {};
+
+// Helper to extract first and last initials (e.g., "Nirjhor Akash" -> "NA")
+const getInitials = (name) => {
+  if (!name) return "U";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
 
 export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
   const dropdownRef = useRef(null);
 
-  const pathname = usePathname();
-
-  const { data: session, isPending, error } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const user = session?.user || null;
-  // console.log(user);
 
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsProfileDropdownOpen(false);
-      }
+  // Safely detect hydration / mounting
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+
+  // Prevent SSR mismatch by checking `mounted`
+  const navLinks = useMemo(() => {
+    if (mounted && user?.name) {
+      return [...BASE_NAV_LINKS, { href: "/dashboard", label: "Dashboard" }];
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    return BASE_NAV_LINKS;
+  }, [mounted, user?.name]);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // Theme Hook
+  const { theme, setTheme, resolvedTheme } = useTheme();
+
+  // Reset image error state when user changes
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.image]);
+
+  // Auto-close drawers/menus on route change
+  useEffect(() => {
+    startTransition(() => {
+      setMobileOpen(false);
+      setUserMenuOpen(false);
+    });
+  }, [pathname]);
+
+  // Click outside listener for the avatar dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setUserMenuOpen(false);
+      }
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSignOut = async () => {
-    await authClient.signOut();
-    setIsMenuOpen(false);
-    setIsProfileDropdownOpen(false);
+  // Scroll event listener
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.push("/auth/login");
+            router.refresh();
+          },
+        },
+      });
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
   };
 
-  const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "All Tickets", href: "/all-tickets" },
-    { label: "About", href: "/about" },
-    { label: "Contact", href: "/contact" },
-  ];
+  const isActive = (href) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  if (user?.id) {
-    navLinks.push({ label: "Dashboard", href: "/dashboard" });
-  }
+  const toggleTheme = () => {
+    const currentTheme = resolvedTheme || theme;
+    setTheme(currentTheme === "dark" ? "light" : "dark");
+  };
+
+  const isDarkMode = mounted && (resolvedTheme === "dark" || theme === "dark");
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-[#90CAF9]/60 bg-[#E3F2FD]/90 backdrop-blur-xl shadow-lg shadow-[#1565C0]/5 transition-all duration-300">
-      {/* Ambient Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-12 bg-[#90CAF9]/40 blur-[80px] pointer-events-none rounded-full" />
-
-      <div className="relative mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* LEFT SIDE: LOGO */}
-        <div className="flex-1 flex justify-start z-20">
+    <header
+      className={`
+        fixed top-0 left-0 right-0 z-50 transition-all duration-500 font-['Manrope',sans-serif]
+        ${
+          scrolled
+            ? "bg-white/90 dark:bg-[#0A0A0A]/95 backdrop-blur-2xl border-b border-zinc-200 dark:border-emerald-900/50 shadow-xl shadow-black/5 dark:shadow-black/80"
+            : "bg-white/60 dark:bg-[#0A0A0A]/60 backdrop-blur-md border-b border-zinc-200/50 dark:border-white/5"
+        }
+      `}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 lg:h-24">
+          {/* Brand Logo */}
           <Link
             href="/"
-            className="flex items-center gap-3 group focus:outline-none"
+            className="flex items-center gap-3.5 group flex-shrink-0"
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#1565C0] to-[#2196F3] shadow-lg shadow-[#1565C0]/20 transition-transform duration-300 group-hover:scale-105 border border-[#90CAF9]/50">
-              {/* Bus/Train SVG Icon */}
-              <svg
-                className="w-5 h-5 text-[#E3F2FD]"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z" />
-              </svg>
+            <div className="relative w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-zinc-100 dark:bg-white/[0.08] p-1 ring-1.5 ring-amber-400/40 group-hover:ring-emerald-500 dark:group-hover:ring-emerald-400/80 group-hover:shadow-[0_0_20px_rgba(16,185,129,0.25)] transition-all duration-300 backdrop-blur-md flex items-center justify-center overflow-hidden">
+              <div className="relative w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
+                <img
+                  src="/images/logo.png"
+                  alt="British Bangladesh Friendship Club Ltd"
+                  className="w-full h-full object-contain p-0.5 group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
             </div>
 
-            <div className="leading-none flex flex-col justify-center">
-              <h1 className="text-xl font-black text-[#1565C0] tracking-wider uppercase drop-shadow-sm">
-                Ticket{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#2196F3] to-[#1565C0]">
-                  Lagbe
+            <div className="flex flex-col justify-center">
+              <div className="flex items-center gap-2">
+                <p className="text-zinc-900 dark:text-white font-extrabold text-sm sm:text-base lg:text-lg leading-tight tracking-tight group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors duration-200">
+                  BBFC{" "}
+                  <span className="text-amber-600 dark:text-amber-400/90 font-medium text-xs sm:text-sm">
+                    LTD
+                  </span>
+                </p>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-['JetBrains_Mono',monospace] font-bold uppercase tracking-wider bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-500/30">
+                  2026
                 </span>
-              </h1>
+              </div>
+              <p className="text-zinc-500 dark:text-zinc-400 text-[10px] sm:text-[11px] font-['JetBrains_Mono',monospace] uppercase tracking-wider mt-0.5 leading-none">
+                Friendship · Progress · Prosperity
+              </p>
             </div>
           </Link>
-        </div>
 
-        {/* CENTER: DESKTOP NAV LINKS - Fixed Z-index to make clickable */}
-        <div className="hidden md:flex justify-center absolute left-1/2 -translate-x-1/2 z-30">
-          <ul className="flex items-center gap-10">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <li key={link.href} className="relative group">
-                  <Link
-                    href={link.href}
-                    className={`block py-2 text-sm font-semibold tracking-wide transition-colors duration-300 ${
-                      isActive
-                        ? "text-[#1565C0]"
-                        : "text-[#1565C0]/70 hover:text-[#1565C0]"
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-
-                  {/* Active Indicator - Glowing line underneath */}
-                  {isActive && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-[2px] bg-gradient-to-r from-transparent via-[#1565C0] to-transparent rounded-full shadow-[0_0_8px_#90CAF9] pointer-events-none" />
-                  )}
-
-                  {/* Hover Indicator for Inactive Links */}
-                  {!isActive && (
-                    <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-[#90CAF9]/80 rounded-full transition-all duration-300 group-hover:w-1/2 pointer-events-none" />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-
-        {/* RIGHT SIDE: DESKTOP AUTH / MOBILE TOGGLE */}
-        <div className="flex-1 flex justify-end items-center gap-4 z-20">
-          <div className="hidden md:flex items-center">
-            {user ? (
-              <div className="relative" ref={dropdownRef}>
-                {/* Profile Dropdown Trigger */}
-                <button
-                  onClick={() =>
-                    setIsProfileDropdownOpen(!isProfileDropdownOpen)
+          {/* Desktop Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-1.5">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                className={`
+                  px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
+                  ${
+                    isActive(href)
+                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-500/20 shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-zinc-100 dark:hover:bg-white/[0.04]"
                   }
-                  className="flex items-center gap-3 rounded-full border border-[#90CAF9]/50 bg-[#E3F2FD]/80 p-1.5 pr-4 transition-all hover:bg-[#90CAF9]/30 hover:border-[#2196F3] focus:outline-none shadow-sm"
-                >
-                  <img
-                    src={user?.image || "/default-avatar.png"}
-                    alt="User Avatar"
-                    className="h-9 w-9 rounded-full object-cover border-2 border-[#1565C0]"
-                  />
-                  <span className="text-sm font-bold text-[#1565C0]">
-                    {user?.name || "User"}
-                  </span>
-                  <GravityIcon
-                    data={isProfileDropdownOpen ? ChevronUp : ChevronDown}
-                    size={14}
-                    className="text-[#1565C0]/70"
-                  />
-                </button>
+                `}
+              >
+                {label}
+              </Link>
+            ))}
+          </nav>
 
-                {/* Profile Dropdown Menu */}
-                {isProfileDropdownOpen && (
-                  <div className="absolute right-0 mt-3 w-56 origin-top-right rounded-2xl border border-[#90CAF9]/50 bg-[#E3F2FD]/95 p-2 shadow-xl backdrop-blur-xl transition-all">
-                    <div className="border-b border-[#90CAF9]/60 mb-2 px-3 pb-3 pt-2">
-                      <p className="text-sm font-bold text-[#1565C0]">
-                        {user?.name || "User"}
-                      </p>
-                      <p className="text-xs text-[#1565C0]/70 truncate mt-0.5">
-                        {user?.email}
-                      </p>
-                    </div>
-
-                    <Link
-                      href="/user/profile"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                      className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-[#1565C0]/90 transition hover:bg-[#90CAF9]/30 hover:text-[#1565C0]"
-                    >
-                      <GravityIcon data={Person} size={16} />
-                      My Profile
-                    </Link>
-
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50 hover:text-red-600 mt-1"
-                    >
-                      <GravityIcon data={ArrowRightFromSquare} size={16} />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-3">
-                <Link
-                  href="/auth/login"
-                  className="px-4 py-2 text-sm font-bold text-[#1565C0]/80 hover:text-[#1565C0] transition-colors"
-                >
-                  Login
-                </Link>
-
-                <Link
-                  href="/auth/register"
-                  className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#1565C0] to-[#2196F3] px-5 py-2 text-sm font-bold text-white shadow-md shadow-[#1565C0]/20 hover:shadow-[#1565C0]/30 transition-all duration-300 hover:-translate-y-0.5"
-                >
-                  <span>Register</span>
-                </Link>
-              </div>
-            )}
-          </div>
-
-          {/* MOBILE MENU TOGGLE (Hamburger Icon) */}
-          <button
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#90CAF9]/50 bg-[#E3F2FD]/80 backdrop-blur-md text-[#1565C0] hover:bg-[#90CAF9]/30 transition-all md:hidden focus:outline-none"
-            aria-label="Toggle Menu"
-          >
-            <svg
-              className="w-5 h-5 transition-transform duration-300"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          {/* Right Controls */}
+          <div className="flex items-center gap-3">
+            {/* Theme Switcher */}
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-xl border border-zinc-200 dark:border-white/10 text-zinc-600 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-300 hover:bg-zinc-100 dark:hover:bg-white/5 transition-all active:scale-95"
+              aria-label="Toggle Theme"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d={
-                  isMenuOpen
-                    ? "M6 18L18 6M6 6l12 12"
-                    : "M4 6h16M4 12h16M4 18h16"
-                }
-              />
-            </svg>
-          </button>
+              {!mounted ? (
+                <div className="w-5 h-5" />
+              ) : isDarkMode ? (
+                <svg
+                  className="w-5 h-5 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+              ) : (
+                <svg
+                  className="w-5 h-5 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
+                  />
+                </svg>
+              )}
+            </button>
+
+            {/* Desktop Auth Section */}
+            <div className="hidden lg:flex items-center gap-3">
+              {!mounted || isPending ? (
+                <div className="w-10 h-10 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+              ) : user ? (
+                <div className="flex items-center gap-3" ref={dropdownRef}>
+                  {/* User Profile Avatar with Dropdown Toggle */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setUserMenuOpen((prev) => !prev)}
+                      className="flex items-center gap-2 p-0.5 rounded-full ring-2 ring-emerald-500/30 hover:ring-emerald-500 transition-all active:scale-95 focus:outline-none"
+                    >
+                      {user.image && !imageError ? (
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-200 dark:border-white/10">
+                          <img
+                            src={user.image}
+                            alt=""
+                            referrerPolicy="no-referrer"
+                            onError={() => setImageError(true)}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center tracking-wider shadow-sm">
+                          {getInitials(user.name)}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {userMenuOpen && (
+                      <div className="absolute right-0 mt-3 w-52 py-2 bg-white dark:bg-[#121212] rounded-2xl shadow-2xl border border-zinc-200 dark:border-white/10 z-50 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="px-4 py-2.5 border-b border-zinc-100 dark:border-white/5">
+                          <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                            {user?.name || "User"}
+                          </p>
+                          <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                            {user?.email}
+                          </p>
+                        </div>
+
+                        <div className="py-1">
+                          <Link
+                            href="/dashboard"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4 text-emerald-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                              />
+                            </svg>
+                            Dashboard
+                          </Link>
+                        </div>
+
+                        <div className="py-1">
+                          <Link
+                            href="/dashboard/profile"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-2 px-4 py-2 text-sm text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-white/5 transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4 text-emerald-500"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                              />
+                            </svg>
+                            My Profile
+                          </Link>
+                        </div>
+
+                        <div className="pt-1 border-t border-zinc-100 dark:border-white/5">
+                          <button
+                            onClick={handleLogout}
+                            className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                              />
+                            </svg>
+                            Log Out
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Direct Log Out Button Beside Photo */}
+                  <button
+                    onClick={handleLogout}
+                    className="px-3.5 py-2 rounded-xl text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 border border-red-200 dark:border-red-900/40 transition-all active:scale-95 flex items-center gap-1.5"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                      />
+                    </svg>
+                    Log Out
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="px-4 py-2.5 rounded-xl text-sm font-semibold text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 transition-all duration-200"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/register"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white text-sm font-semibold shadow-lg shadow-emerald-950/20 dark:shadow-emerald-950/60 hover:shadow-emerald-900/40 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Hamburger Button */}
+            <button
+              onClick={() => setMobileOpen((o) => !o)}
+              className="lg:hidden p-2.5 rounded-xl text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-white/5 border border-zinc-200 dark:border-white/5 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <div className="w-5 h-4 relative flex flex-col justify-between">
+                <span
+                  className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 ${
+                    mobileOpen ? "rotate-45 translate-y-1.5" : ""
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 ${
+                    mobileOpen ? "opacity-0" : ""
+                  }`}
+                />
+                <span
+                  className={`block h-0.5 w-full bg-current rounded-full transition-all duration-300 ${
+                    mobileOpen ? "-rotate-45 -translate-y-2" : ""
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* MOBILE MENU DRAWER */}
+      {/* Mobile Drawer */}
       <div
-        className={`md:hidden border-t border-[#90CAF9]/50 bg-[#E3F2FD]/95 backdrop-blur-2xl transition-all duration-300 ease-in-out overflow-hidden ${
-          isMenuOpen ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`
+          lg:hidden overflow-hidden transition-all duration-300 ease-in-out
+          ${mobileOpen ? "max-h-[38rem] opacity-100" : "max-h-0 opacity-0"}
+        `}
       >
-        <div className="space-y-4 px-4 py-6">
-          {/* Mobile Links */}
-          <ul className="space-y-2">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className={`block rounded-xl px-4 py-3 text-base font-bold transition ${
-                      isActive
-                        ? "bg-[#90CAF9]/30 text-[#1565C0] border-l-4 border-[#1565C0]"
-                        : "text-[#1565C0]/80 hover:bg-[#90CAF9]/30 hover:text-[#1565C0]"
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        <div className="px-4 py-5 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-2xl border-t border-zinc-200 dark:border-white/10 flex flex-col gap-1.5">
+          {/* Mobile User Details Card if Logged In */}
+          {mounted && user && (
+            <div className="flex items-center gap-3 p-3 mb-2 rounded-xl bg-zinc-50 dark:bg-white/[0.03] border border-zinc-200 dark:border-white/5">
+              {user.image && !imageError ? (
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-200 dark:border-white/10">
+                  <img
+                    src={user.image}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    onError={() => setImageError(true)}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center tracking-wider">
+                  {getInitials(user.name)}
+                </div>
+              )}
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
+                  {user?.name || "User"}
+                </span>
+                <span className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                  {user?.email}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {navLinks.map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors duration-150 ${
+                isActive(href)
+                  ? "bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/20"
+                  : "text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
+              }`}
+            >
+              {label}
+            </Link>
+          ))}
 
           {/* Mobile Auth Actions */}
-          <div className="border-t border-[#90CAF9]/60 pt-4">
-            {user ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 px-4 py-2 mb-2">
-                  <img
-                    src={user?.image || "/default-avatar.png"}
-                    alt="User Avatar"
-                    className="h-10 w-10 rounded-full object-cover border-2 border-[#1565C0]"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-[#1565C0]">
-                      {user?.name || "User"}
-                    </p>
-                    <p className="text-xs text-[#1565C0]/80">{user?.email}</p>
-                  </div>
-                </div>
-
+          <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-white/10 flex flex-col gap-2">
+            {!mounted || isPending ? (
+              <div className="h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 animate-pulse" />
+            ) : user ? (
+              <>
                 <Link
-                  href="/user/profile"
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-base font-bold text-[#1565C0]/90 hover:bg-[#90CAF9]/30 hover:text-[#1565C0] transition"
-                  onClick={() => setIsMenuOpen(false)}
+                  href="/dashboard/profile"
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-medium border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.02] text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 >
-                  <GravityIcon data={Person} size={18} />
                   My Profile
                 </Link>
-
                 <button
-                  onClick={handleSignOut}
-                  className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-base font-bold text-red-500 hover:bg-red-50 hover:text-red-600 transition"
+                  onClick={handleLogout}
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-600 hover:bg-red-500 text-white shadow-lg transition-colors"
                 >
-                  <GravityIcon data={ArrowRightFromSquare} size={18} />
-                  Logout
+                  Log Out
                 </button>
-              </div>
+              </>
             ) : (
-              <div className="flex flex-col gap-3">
+              <>
                 <Link
                   href="/auth/login"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-[#90CAF9] bg-[#E3F2FD] py-3 text-base font-bold text-[#1565C0] transition hover:bg-[#90CAF9]/30"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-medium border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-white/[0.02] text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors"
                 >
-                  <GravityIcon data={Person} size={18} />
-                  <span>Login</span>
+                  Sign In
                 </Link>
-
                 <Link
                   href="/auth/register"
-                  className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#1565C0] to-[#2196F3] py-3 text-base font-bold text-white shadow-md shadow-[#1565C0]/20 transition"
-                  onClick={() => setIsMenuOpen(false)}
+                  className="w-full text-center px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/30 transition-colors"
                 >
-                  <GravityIcon data={PersonPlus} size={18} />
-                  <span>Register</span>
+                  Sign Up
                 </Link>
-              </div>
+              </>
             )}
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 }

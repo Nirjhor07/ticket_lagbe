@@ -12,7 +12,7 @@ The goal of this project is to provide a complete ticketing workflow where:
 
 ## Live URL
 
-- Live Site:
+- Live Site:https://ticket-lagbe.vercel.app
 
 ## Key Features
 
